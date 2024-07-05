@@ -1,4 +1,13 @@
 #include "Banco.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+
+Banco::Banco() {
+    cargarReglasFraude();
+    cargarTransacciones();
+}
 
 void Banco::cargarReglasFraude() {
     // Reglas de fraude actualizadas:
@@ -8,16 +17,42 @@ void Banco::cargarReglasFraude() {
     arbolDecisionFraude.insertar(regla2);
 }
 
-
 void Banco::evaluarReglasFraude(Transaccion* transaccion) {
+    bool esSospechosa = false;
+    string razon;
+
     if (transaccion->getMonto() > 150000) {
-        transaccionesSospechosas.push_back(transaccion);
+        razon += "Monto mayor a 150.000; ";
+        esSospechosa = true;
     }
+
     if (transaccion->getUbicacion() == "Desconocida") {
-        transaccionesSospechosas.push_back(transaccion);
+        razon += "Ubicación desconocida; ";
+        esSospechosa = true;
+    }
+
+    string cuenta = transaccion->getCuentaOrigen();
+    string fecha = transaccion->getFecha();
+
+    vector<Transaccion*> transaccionesRecientes = arbolTransacciones.encontrarTodos(cuenta, fecha);
+
+    if (transaccionesRecientes.size() > 5) {
+        razon += "Frecuencia alta de Transaccion (maximo 5 por dia); ";
+        esSospechosa = true;
+    }
+
+    for (Transaccion* trans : transaccionesRecientes) {
+        if (trans->getCuentaOrigen() == cuenta && trans->getUbicacion() != transaccion->getUbicacion()) {
+            razon += "Ubicaciones geográficas diferentes en corto tiempo; ";
+            esSospechosa = true;
+            break;
+        }
+    }
+
+    if (esSospechosa) {
+        transaccionesSospechosas.push_back({transaccion, razon});
     }
 }
-
 
 void Banco::cargarTransacciones() {
     ifstream archivo("transacciones.txt");
@@ -53,18 +88,24 @@ void Banco::guardarTransaccion(Transaccion* transaccion) {
 void Banco::reportarTransaccionesSospechosas() {
     ofstream archivo("transacciones_sospechosas.txt");
 
-    for (auto trans : transaccionesSospechosas) {
+    cout << "Las Reglas para Transacciones sospechosas son: (Montos sobre 150.000, nombre de ubicacion 'Desconocida', "
+         << "frecuencia alta de transacciones en el mismo día, y ubicaciones geográficas diferentes en corto tiempo).\n";
+
+    for (const auto& par : transaccionesSospechosas) {
+        Transaccion* trans = par.first;
+        const string& razon = par.second;
+
         archivo << "ID: " << trans->getId() << ", Origen: " << trans->getCuentaOrigen()
                 << ", Destino: " << trans->getCuentaDestino() << ", Monto: " << trans->getMonto()
                 << ", Ubicacion: " << trans->getUbicacion() << ", Fecha: " << trans->getFecha()
-                << ", Hora: " << trans->getHora() << endl;
+                << ", Hora: " << trans->getHora() << ", Razón: " << razon << endl;
+
+        cout << "ID: " << trans->getId() << ", Origen: " << trans->getCuentaOrigen()
+             << ", Destino: " << trans->getCuentaDestino() << ", Monto: " << trans->getMonto()
+             << ", Ubicacion: " << trans->getUbicacion() << ", Fecha: " << trans->getFecha()
+             << ", Hora: " << trans->getHora() << ", Razón: " << razon << endl;
     }
     archivo.close();
-}
-
-Banco::Banco() {
-    cargarReglasFraude();
-    cargarTransacciones();
 }
 
 void Banco::registrarTransaccion(int id, string origen, string destino, double monto, string ubicacion, string fecha, string hora) {
@@ -79,12 +120,5 @@ Transaccion* Banco::buscarTransaccion(int id) {
 }
 
 void Banco::generarReporte() {
-    cout << "Transacciones Sospechosas por ubicacion ('Desconocida') o monto sobre el minimo (Sobre 150000):\n";
-    for (auto trans : transaccionesSospechosas) {
-        cout << "ID: " << trans->getId() << ", Origen: " << trans->getCuentaOrigen()
-             << ", Destino: " << trans->getCuentaDestino() << ", Monto: " << trans->getMonto()
-             << ", Ubicacion: " << trans->getUbicacion() << ", Fecha: " << trans->getFecha()
-             << ", Hora: " << trans->getHora() << endl;
-    }
     reportarTransaccionesSospechosas();
 }

@@ -13,7 +13,7 @@ class Banco {
 private:
     ArbolAVL arbolTransacciones;
     ArbolABB arbolDecisionFraude;
-    vector<Transaccion*> transaccionesSospechosas;
+    vector<pair<Transaccion*, string>> transaccionesSospechosas;
 
     void cargarReglasFraude();
     void evaluarReglasFraude(Transaccion* transaccion);

@@ -1,10 +1,54 @@
+// ArbolAVL.cpp
 #include "ArbolAVL.h"
 
-#include <algorithm>
+// Implementación manual de la función max
+int max(int a, int b) {
+    return (a > b) ? a : b;
+}
 
 NodoAVL::NodoAVL(Transaccion* trans) : transaccion(trans), izquierdo(nullptr), derecho(nullptr), altura(1) {}
 
 ArbolAVL::ArbolAVL() : raiz(nullptr) {}
+
+int ArbolAVL::altura(NodoAVL* nodo) {
+    if (nodo == nullptr) {
+        return 0;
+    }
+    return nodo->altura;
+}
+
+int ArbolAVL::balance(NodoAVL* nodo) {
+    if (nodo == nullptr) {
+        return 0;
+    }
+    return altura(nodo->izquierdo) - altura(nodo->derecho);
+}
+
+NodoAVL* ArbolAVL::rotacionDerecha(NodoAVL* nodo) {
+    NodoAVL* izquierdo = nodo->izquierdo;
+    NodoAVL* derecha_izq = izquierdo->derecho;
+
+    izquierdo->derecho = nodo;
+    nodo->izquierdo = derecha_izq;
+
+    nodo->altura = max(altura(nodo->izquierdo), altura(nodo->derecho)) + 1;
+    izquierdo->altura = max(altura(izquierdo->izquierdo), altura(izquierdo->derecho)) + 1;
+
+    return izquierdo;
+}
+
+NodoAVL* ArbolAVL::rotacionIzquierda(NodoAVL* nodo) {
+    NodoAVL* derecho = nodo->derecho;
+    NodoAVL* izquierda_der = derecho->izquierdo;
+
+    derecho->izquierdo = nodo;
+    nodo->derecho = izquierda_der;
+
+    nodo->altura = max(altura(nodo->izquierdo), altura(nodo->derecho)) + 1;
+    derecho->altura = max(altura(derecho->izquierdo), altura(derecho->derecho)) + 1;
+
+    return derecho;
+}
 
 NodoAVL* ArbolAVL::insertar(NodoAVL* nodo, Transaccion* trans) {
     if (nodo == nullptr) {
@@ -20,25 +64,25 @@ NodoAVL* ArbolAVL::insertar(NodoAVL* nodo, Transaccion* trans) {
         return nodo;
     }
 
-    nodo->altura = 1 + std::max(altura(nodo->izquierdo), altura(nodo->derecho));
+    nodo->altura = 1 + max(altura(nodo->izquierdo), altura(nodo->derecho));
 
-    int balanceFactor = balance(nodo);
+    int balance_actual = balance(nodo);
 
-    // Casos de desequilibrio
-    if (balanceFactor > 1 && trans->getId() < nodo->izquierdo->transaccion->getId()) {
+    // Casos de rotación
+    if (balance_actual > 1 && trans->getId() < nodo->izquierdo->transaccion->getId()) {
         return rotacionDerecha(nodo);
     }
 
-    if (balanceFactor < -1 && trans->getId() > nodo->derecho->transaccion->getId()) {
+    if (balance_actual < -1 && trans->getId() > nodo->derecho->transaccion->getId()) {
         return rotacionIzquierda(nodo);
     }
 
-    if (balanceFactor > 1 && trans->getId() > nodo->izquierdo->transaccion->getId()) {
+    if (balance_actual > 1 && trans->getId() > nodo->izquierdo->transaccion->getId()) {
         nodo->izquierdo = rotacionIzquierda(nodo->izquierdo);
         return rotacionDerecha(nodo);
     }
 
-    if (balanceFactor < -1 && trans->getId() < nodo->derecho->transaccion->getId()) {
+    if (balance_actual < -1 && trans->getId() < nodo->derecho->transaccion->getId()) {
         nodo->derecho = rotacionDerecha(nodo->derecho);
         return rotacionIzquierda(nodo);
     }
@@ -50,58 +94,42 @@ void ArbolAVL::insertar(Transaccion* trans) {
     raiz = insertar(raiz, trans);
 }
 
-Transaccion* ArbolAVL::buscar(int id) {
-    NodoAVL* actual = raiz;
-
-    while (actual != nullptr) {
-        if (id < actual->transaccion->getId()) {
-            actual = actual->izquierdo;
-        } else if (id > actual->transaccion->getId()) {
-            actual = actual->derecho;
-        } else {
-            return actual->transaccion;
-        }
+NodoAVL* ArbolAVL::buscar(NodoAVL* nodo, int id) {
+    if (nodo == nullptr || nodo->transaccion->getId() == id) {
+        return nodo;
     }
 
+    if (id < nodo->transaccion->getId()) {
+        return buscar(nodo->izquierdo, id);
+    }
+
+    return buscar(nodo->derecho, id);
+}
+
+Transaccion* ArbolAVL::buscar(int id) {
+    NodoAVL* resultado = buscar(raiz, id);
+    if (resultado != nullptr) {
+        return resultado->transaccion;
+    }
     return nullptr;
 }
 
-NodoAVL* ArbolAVL::rotacionDerecha(NodoAVL* nodo) {
-    NodoAVL* izquierdo = nodo->izquierdo;
-    NodoAVL* subArbol = izquierdo->derecho;
-
-    izquierdo->derecho = nodo;
-    nodo->izquierdo = subArbol;
-
-    nodo->altura = std::max(altura(nodo->izquierdo), altura(nodo->derecho)) + 1;
-    izquierdo->altura = std::max(altura(izquierdo->izquierdo), altura(izquierdo->derecho)) + 1;
-
-    return izquierdo;
-}
-
-NodoAVL* ArbolAVL::rotacionIzquierda(NodoAVL* nodo) {
-    NodoAVL* derecho = nodo->derecho;
-    NodoAVL* subArbol = derecho->izquierdo;
-
-    derecho->izquierdo = nodo;
-    nodo->derecho = subArbol;
-
-    nodo->altura = std::max(altura(nodo->izquierdo), altura(nodo->derecho)) + 1;
-    derecho->altura = std::max(altura(derecho->izquierdo), altura(derecho->derecho)) + 1;
-
-    return derecho;
-}
-
-int ArbolAVL::altura(NodoAVL* nodo) {
+void ArbolAVL::encontrarTodos(NodoAVL* nodo, const std::string& cuenta, const std::string& fecha, std::vector<Transaccion*>& encontradas) const {
     if (nodo == nullptr) {
-        return 0;
+        return;
     }
-    return nodo->altura;
+
+    encontrarTodos(nodo->izquierdo, cuenta, fecha, encontradas);
+
+    if (nodo->transaccion->getCuentaOrigen() == cuenta && nodo->transaccion->getFecha() == fecha) {
+        encontradas.push_back(nodo->transaccion);
+    }
+
+    encontrarTodos(nodo->derecho, cuenta, fecha, encontradas);
 }
 
-int ArbolAVL::balance(NodoAVL* nodo) {
-    if (nodo == nullptr) {
-        return 0;
-    }
-    return altura(nodo->izquierdo) - altura(nodo->derecho);
+std::vector<Transaccion*> ArbolAVL::encontrarTodos(const std::string& cuenta, const std::string& fecha) const {
+    std::vector<Transaccion*> encontradas;
+    encontrarTodos(raiz, cuenta, fecha, encontradas);
+    return encontradas;
 }
