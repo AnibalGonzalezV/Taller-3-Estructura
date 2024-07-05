@@ -1,4 +1,6 @@
-#include "Banco.h"
+//#include "Banco.h"
+#include "../include/Banco.h"
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -10,7 +12,7 @@ Banco::Banco() {
 }
 
 void Banco::cargarReglasFraude() {
-    // Reglas de fraude actualizadas:
+    //Reglas para detectar el Fraude
     Transaccion* regla1 = new Transaccion(1000000, "regla", "monto", 150000, "", "", "");
     Transaccion* regla2 = new Transaccion(1000001, "regla", "ubicacion", 0, "Desconocida", "", "");
     arbolDecisionFraude.insertar(regla1);
@@ -55,7 +57,7 @@ void Banco::evaluarReglasFraude(Transaccion* transaccion) {
 }
 
 void Banco::cargarTransacciones() {
-    ifstream archivo("transacciones.txt");
+    ifstream archivo("Data/transacciones.txt");
     string linea;
 
     while (getline(archivo, linea)) {
@@ -77,7 +79,7 @@ void Banco::cargarTransacciones() {
 }
 
 void Banco::guardarTransaccion(Transaccion* transaccion) {
-    ofstream archivo("transacciones.txt", ios::app);
+    ofstream archivo("Data/transacciones.txt", ios::app);
     archivo << transaccion->getId() << "," << transaccion->getCuentaOrigen() << ","
             << transaccion->getCuentaDestino() << "," << transaccion->getMonto() << ","
             << transaccion->getUbicacion() << "," << transaccion->getFecha() << ","
@@ -86,10 +88,10 @@ void Banco::guardarTransaccion(Transaccion* transaccion) {
 }
 
 void Banco::reportarTransaccionesSospechosas() {
-    ofstream archivo("transacciones_sospechosas.txt");
+    ofstream archivo("Data/transacciones_sospechosas.txt");
 
     cout << "Las Reglas para Transacciones sospechosas son: (Montos sobre 150.000, nombre de ubicacion 'Desconocida', "
-         << "frecuencia alta de transacciones en el mismo día, y ubicaciones geográficas diferentes en corto tiempo).\n";
+         << "frecuencia alta de transacciones en el mismo día (Max. 5 transacciones al dia), y ubicaciones geográficas diferentes en corto tiempo).\n";
 
     for (const auto& par : transaccionesSospechosas) {
         Transaccion* trans = par.first;

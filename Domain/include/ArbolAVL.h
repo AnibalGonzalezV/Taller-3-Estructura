@@ -1,4 +1,3 @@
-// ArbolAVL.h
 #pragma once
 
 #include "Transaccion.h"

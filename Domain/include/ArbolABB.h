@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Transaccion.h"
+
+
 #include <vector>
 
 class NodoABB {

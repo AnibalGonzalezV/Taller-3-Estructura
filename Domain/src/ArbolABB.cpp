@@ -1,4 +1,5 @@
-#include "ArbolABB.h"
+//#include "ArbolABB.h"
+#include "../include/ArbolABB.h"
 
 NodoABB::NodoABB(Transaccion* trans) : transaccion(trans), izquierdo(nullptr), derecho(nullptr) {}
 

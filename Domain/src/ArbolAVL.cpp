@@ -1,7 +1,7 @@
-// ArbolAVL.cpp
-#include "ArbolAVL.h"
+//#include "ArbolAVL.h"
+#include "../include/ArbolAVL.h"
 
-// Implementación manual de la función max
+//Implementamos manualmente el max.
 int max(int a, int b) {
     return (a > b) ? a : b;
 }
@@ -68,7 +68,7 @@ NodoAVL* ArbolAVL::insertar(NodoAVL* nodo, Transaccion* trans) {
 
     int balance_actual = balance(nodo);
 
-    // Casos de rotación
+    // Casos de Rotacion para Mantener Balance
     if (balance_actual > 1 && trans->getId() < nodo->izquierdo->transaccion->getId()) {
         return rotacionDerecha(nodo);
     }
