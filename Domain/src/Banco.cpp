@@ -13,7 +13,7 @@ Banco::Banco() {
 
 void Banco::cargarReglasFraude() {
     //Reglas para detectar el Fraude
-    Transaccion* regla1 = new Transaccion(1000000, "regla", "monto", 150000, "", "", "");
+    Transaccion* regla1 = new Transaccion(1000000, "regla", "monto", 100000, "", "", "");
     Transaccion* regla2 = new Transaccion(1000001, "regla", "ubicacion", 0, "Desconocida", "", "");
     arbolDecisionFraude.insertar(regla1);
     arbolDecisionFraude.insertar(regla2);
@@ -23,8 +23,8 @@ void Banco::evaluarReglasFraude(Transaccion* transaccion) {
     bool esSospechosa = false;
     string razon;
 
-    if (transaccion->getMonto() > 150000) {
-        razon += "Monto mayor a 150.000; ";
+    if (transaccion->getMonto() > 100000) {
+        razon += "Monto mayor a 100.000; ";
         esSospechosa = true;
     }
 
@@ -38,8 +38,8 @@ void Banco::evaluarReglasFraude(Transaccion* transaccion) {
 
     vector<Transaccion*> transaccionesRecientes = arbolTransacciones.encontrarTodos(cuenta, fecha);
 
-    if (transaccionesRecientes.size() > 5) {
-        razon += "Frecuencia alta de Transaccion (maximo 5 por dia); ";
+    if (transaccionesRecientes.size() > 3) {
+        razon += "Frecuencia alta de Transaccion (maximo 3 por dia); ";
         esSospechosa = true;
     }
 
@@ -90,8 +90,8 @@ void Banco::guardarTransaccion(Transaccion* transaccion) {
 void Banco::reportarTransaccionesSospechosas() {
     ofstream archivo("Data/transacciones_sospechosas.txt");
 
-    cout << "Las Reglas para Transacciones sospechosas son: (Montos sobre 150.000, nombre de ubicacion 'Desconocida', "
-         << "frecuencia alta de transacciones en el mismo día (Max. 5 transacciones al dia), y ubicaciones geográficas diferentes en corto tiempo).\n";
+    cout << "Las Reglas para Transacciones sospechosas son: (Montos sobre 100.000, nombre de ubicacion 'Desconocida', "
+         << "frecuencia alta de transacciones en el mismo día (Max. 3 transacciones al dia), y ubicaciones geográficas diferentes en corto tiempo).\n";
 
     for (const auto& par : transaccionesSospechosas) {
         Transaccion* trans = par.first;
