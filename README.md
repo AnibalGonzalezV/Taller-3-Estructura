@@ -24,3 +24,9 @@ Se crean los siguientes objetos del tipo Transaccion con el archivo "transaccion
 12,12345,54321,200000,Valparaiso,2023-06-30,12:30
 
 El Reporte de las Transacciones Fraudolentas y/o Sospechosas se guardaran en la carpeta Data, con el nombre de "transacciones_sospechosas.txt"
+
+Para las transacciones sospechosas estan las siguientes reglas:
+- Monto superior a 100000.
+- Ubicacion con nombre "Desconocida".
+- Frecuencia de transaccion alta en un corto periodo de tiempo (Máx. 3 transacciones por dia).
+- Ubicaciones Diferentes en el mismo dia.
